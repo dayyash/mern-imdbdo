@@ -29,8 +29,8 @@ router.get('/', (req, res) => {
 //Get all movies
 router.get('/movies', (req, res) => {
     Movie.find((err, movies) => {
-        if(err) return res.json({ sucess: false, error: err });
-        return res.json({ sucess: true, data: movies });
+        if(err) return res.json({ success: false, error: err });
+        return res.json({ success: true, data: movies });
     });
 });
 
@@ -55,7 +55,7 @@ router.post('/movies', (req, res) => {
     const {title, description, releaseDate} = req.body;
     if(!title) {
         return res.json({
-            sucess: false,
+            success: false,
             error: 'You need to provide a title'
         });
     }
@@ -63,19 +63,40 @@ router.post('/movies', (req, res) => {
     movie.description = description;
     movie.releaseDate = releaseDate;
     movie.save(err => {
-        if(err) return res.json({sucess: false, error: err});
-        return res.json({sucess: true});
+        if(err) return res.json({success: false, error: err});
+        return res.json({success: true});
     });
 });
 
 //Edit movie by id
 router.put('/movies/:movieId', (req, res) => {
-    //Todo
+    const {movieId} = req.params;
+    if(!movieId) {
+        return res.json({success: false, error: 'No ID'});
+    }
+    Movie.findById(movieId, (err, movie) => {
+        if(err) return res.json({success: false, err});
+        const {title, description, releaseDate} = req.body;
+        if(title) movie.title = title;
+        if(description) movie.description = description;
+        if(releaseDate) movie.releaseDate = releaseDate;
+        movie.save( err => {
+            if(err) return res.json({success: false, err});
+            return res.json({success: true});
+        });
+    });
 });
 
 //Delete movie by id
 router.delete('/movies/:movieId', (req, res) => {
-    //Todo
+    const {movieId} = req.params;
+    if(!movieId) {
+        return res.json({success:false, error: 'No ID'});
+    }
+    Movie.remove({_id: movieId}, (err, movie) => {
+        if(err) return res.json({success:false, err});
+        return res.json({success:true});
+    });
 });
 //----------- APIs --------------------------------------//
 
