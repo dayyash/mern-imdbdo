@@ -8,8 +8,10 @@ const MovieList = props => {
             title={movie.title} 
             description={movie.description} 
             releaseDate={movie.releaseDate} 
-            id={movie._id}>
-            say
+            id={movie._id}
+            handleUpdateMovie={props.handleUpdateMovie}
+            handleDeleteMovie={props.handleDeleteMovie}
+            >
         </Movie>
     ));
     return (
@@ -26,6 +28,8 @@ MovieList.propTypes = {
         releaseDate: PropTypes.instanceOf(Date),
         id: PropTypes.string,
     })),
+    handleDeleteMovie: PropTypes.func.isRequired,
+    handleUpdateMovie: PropTypes.func.isRequired,
 };
 
 MovieList.defaultProps = {

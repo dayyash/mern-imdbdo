@@ -3,6 +3,7 @@ import React from 'react';
 import MovieList from './MovieList';
 import MovieEntryForm from './MovieEntryForm';
 import 'whatwg-fetch';
+import { Button } from 'react-bootstrap';
 
 class MovieBox extends React.Component {
     constructor() {
@@ -12,21 +13,36 @@ class MovieBox extends React.Component {
             error: null,
             title: '',
             description: '',
-            releaseDate: null
+            releaseDate: null,
+            editId: null,
+            show: false
         };
-        this.pollInterval = null;
-    }
+        // this.pollInterval = null;
+        this.handleShow = this.handleShow.bind(this);
+        this.handleClose = this.handleClose.bind(this);
+   }
 
+
+   handleClose() {
+    //    const newState = this.state.show;
+    this.setState({ show: false });
+  }
+
+handleShow() {
+    // const newState = this.state.show;
+    this.setState({ show: true });
+  }
+    
     componentDidMount() {
         this.loadMovies();
-        if(!this.pollInterval) {
-            this.pollInterval = setInterval(this.loadMovies, 2000);
-        }
+        // if(!this.pollInterval) {
+        //     this.pollInterval = setInterval(this.loadMovies, 2000);
+        // }
     }
 
     componentWillMount() {
-        if(this.pollInterval) clearInterval(this.pollInterval);
-        this.pollInterval = null;
+        // if(this.pollInterval) clearInterval(this.pollInterval);
+        // this.pollInterval = null;
     }
 
     onChangeText = (e) => {
@@ -51,6 +67,24 @@ class MovieBox extends React.Component {
         });
     }
 
+    onUpdateMovie = (id) => {
+        const oldMovie = this.state.data.find(c => c._id === id);
+        if (!oldMovie) return;
+        this.setState({title: oldMovie.title, description: oldMovie.description, releaseDate: oldMovie.releaseDate, editId: id});
+    }
+    
+  submitMovieEdits = (id) => {
+    const { title, description, releaseDate, editId } = this.state.data.find(c => c._id === id);
+    fetch(`/api/comments/${editId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description, releaseDate }),
+    }).then(res => res.json()).then((res) => {
+      if (!res.success) this.setState({ error: res.error.message || res.error });
+      else this.setState({ title: '', description: '', releaseDate: null, editId: null });
+    });
+  }
+
     loadMovies = () => {
         fetch('/api/movies')
         .then(data => data.json())
@@ -64,15 +98,21 @@ class MovieBox extends React.Component {
         return (
             <div className="container">
                 <div className="movies">
-                    <MovieList data={this.state.data} />
+                    <MovieList 
+                        data={this.state.data}
+                        handleUpdateMovie={this.onUpdateMovie}    
+                    />
                 </div>
                 <div className="form">
                     <MovieEntryForm
-                        title={this.state.title}
-                        description={this.state.description}
-                        releaseDate={this.state.releaseDate}
-                        handleChangeText={this.onChangeText}
-                        submitMovie={this.submitMovie}
+                            title={this.state.title}
+                            description={this.state.description}
+                            releaseDate={this.state.releaseDate}
+                            handleChangeText={this.onChangeText}
+                            submitMovie={this.submitMovie}
+                            show-={this.state.show}
+                            handleClose={this.handleClose}
+                            handleShow={this.handleShow}
                     />
                 </div>
                 {this.state.error && <p>{this.state.error}</p>}
